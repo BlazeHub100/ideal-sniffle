@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html lang="th" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Script & Digital Store Hub</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Prompt', sans-serif; }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 h-full flex flex-col selection:bg-indigo-500 selection:text-white">
+
+    <header class="bg-slate-900/80 backdrop-blur border-b border-slate-800 sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="bg-gradient-to-tr from-indigo-500 to-purple-500 p-2.5 rounded-xl shadow-lg shadow-indigo-500/20">
+                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path></svg>
+                </div>
+                <span class="text-xl font-bold bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent">BlazeHub Store</span>
+            </div>
+            
+            <div class="flex items-center space-x-4">
+                <!-- Wallet Balance Display -->
+                <div class="bg-slate-800/80 border border-slate-700/60 px-4 py-2 rounded-2xl flex items-center space-x-2 shadow-inner">
+                    <span class="text-xs text-slate-400 font-medium uppercase tracking-wider">เงินในเว็บไซต์:</span>
+                    <span id="userBalance" class="text-emerald-400 font-bold text-lg">100.00</span>
+                    <span class="text-xs text-slate-400">บาท</span>
+                </div>
+
+                <!-- Navigation Buttons -->
+                <nav class="hidden md:flex space-x-2">
+                    <button onclick="switchTab('store')" id="navStore" class="px-4 py-2 rounded-xl text-sm font-medium transition bg-indigo-600 text-white shadow-md shadow-indigo-600/30">ร้านค้าและสคริปต์</button>
+                    <button onclick="switchTab('history')" id="navHistory" class="px-4 py-2 rounded-xl text-sm font-medium transition text-slate-400 hover:text-white hover:bg-slate-800">ประวัติการซื้อ</button>
+                    <button onclick="switchTab('admin')" id="navAdmin" class="px-4 py-2 rounded-xl text-sm font-medium transition text-slate-400 hover:text-white hover:bg-slate-800">ผู้พัฒนา (Dev)</button>
+                </nav>
+            </div>
+        </div>
+        <!-- Mobile Navigation Bar -->
+        <div class="md:hidden flex border-t border-slate-800 bg-slate-900 px-2 py-2 justify-around">
+            <button onclick="switchTab('store')" id="mobileNavStore" class="flex-1 py-1 text-center text-xs font-medium text-indigo-400 font-bold">ร้านค้า</button>
+            <button onclick="switchTab('history')" id="mobileNavHistory" class="flex-1 py-1 text-center text-xs font-medium text-slate-400">ประวัติ</button>
+            <button onclick="switchTab('admin')" id="mobileNavAdmin" class="flex-1 py-1 text-center text-xs font-medium text-slate-400">ผู้พัฒนา</button>
+        </div>
+    </header>
+
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 overflow-y-auto">
+        
+        <!-- Store Tab Content -->
+        <div id="tabStore" class="space-y-6">
+            <!-- Hero Banner & Discount Code Box -->
+            <div class="relative overflow-hidden bg-gradient-to-r from-indigo-900/40 via-purple-900/40 to-slate-900 border border-indigo-500/20 rounded-3xl p-6 sm:p-8 shadow-2xl">
+                <div class="absolute -right-10 -bottom-10 w-60 h-60 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none"></div>
+                <div class="relative z-10 max-w-2xl">
+                    <span class="inline-block bg-indigo-500/20 text-indigo-300 text-xs font-semibold px-3 py-1 rounded-full mb-3 border border-indigo-500/30">ต้อนรับสมาชิกใหม่</span>
+                    <h1 class="text-2xl sm:text-4xl font-extrabold text-white tracking-tight mb-2">รับฟรีทันที 100 บาทเมื่อเข้าเว็บไซต์!</h1>
+                    <p class="text-slate-300 text-sm sm:text-base mb-6">เลือกซื้อสคริปต์และไอเทมพรีเมียมราคาคุ้มค่า ชำระด้วยเงินในเว็บไซต์ได้อย่างปลอดภัย 100%</p>
+                    
+                    <!-- Coupon Input Area -->
+                    <div class="flex flex-col sm:flex-row gap-3">
+                        <input type="text" id="couponInput" placeholder="กรอกโค้ดส่วนลด" class="bg-slate-900/90 border border-slate-700 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:border-indigo-500 flex-1 text-white placeholder-slate-500">
+                        <button onclick="applyCoupon()" class="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-medium px-6 py-3 rounded-2xl text-sm transition shadow-lg shadow-indigo-600/30">ใช้งานโค้ด</button>
+                    </div>
+                    <p id="couponMsg" class="text-xs mt-2 text-slate-400"></p>
+                </div>
+            </div>
+
+            <!-- Products Header & Grid -->
+            <div>
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-xl font-bold text-white flex items-center space-x-2">
+                        <span>รายการสินค้าและสคริปต์ทั้งหมด</span>
+                    </h2>
+                    <span id="itemCountBadge" class="text-xs bg-slate-800 text-slate-400 px-3 py-1 rounded-xl">0 รายการ</span>
+                </div>
+                <div id="productsGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <!-- Dynamically populated products -->
+                </div>
+            </div>
+        </div>
+
+        <!-- History Tab Content -->
+        <div id="tabHistory" class="hidden space-y-6">
+            <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-xl">
+                <h2 class="text-xl font-bold text-white mb-4">ประวัติการซื้อสคริปต์และสินค้า</h2>
+                <p class="text-sm text-slate-400 mb-6">รายการธุรกรรมทั้งหมดที่เกิดขึ้นในระบบร้านค้านี้</p>
+                
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="border-b border-slate-800 text-slate-400 text-xs uppercase tracking-wider">
+                                <th class="py-3 px-4 font-semibold">วันที่ / เวลา</th>
+                                <th class="py-3 px-4 font-semibold">รายการสินค้า</th>
+                                <th class="py-3 px-4 font-semibold">ราคา (เงินในเว็บไซต์)</th>
+                                <th class="py-3 px-4 font-semibold">สถานะ</th>
+                            </tr>
+                        </thead>
+                        <tbody id="historyTableBody" class="divide-y divide-slate-800/60 text-sm">
+                            <!-- Dynamically populated history -->
+                        </tbody>
+                    </table>
+                </div>
+                <div id="emptyHistory" class="text-center py-12 text-slate-500 hidden">
+                    ยังไม่มีประวัติการซื้อสินค้าในระบบ
+                </div>
+            </div>
+        </div>
+
+        <!-- Admin Tab Content -->
+        <div id="tabAdmin" class="hidden space-y-6 max-w-2xl mx-auto">
+            <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-xl space-y-6">
+                <div>
+                    <h2 class="text-xl font-bold text-white mb-1">แผงควบคุมผู้พัฒนา (Developer Panel)</h2>
+                    <p class="text-sm text-slate-400">จัดการระบบและเพิ่มเงินในเว็บไซต์ (ต้องใช้รหัสลับของผู้พัฒนา)</p>
+                </div>
+
+                <!-- Add Balance Section -->
+                <div class="space-y-4 bg-slate-950/60 p-5 rounded-2xl border border-slate-800/80">
+                    <h3 class="text-sm font-semibold text-emerald-400 uppercase tracking-wider">เติมเงินในเว็บไซต์ให้ตัวเอง</h3>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-300 mb-1">จำนวนเงินที่ต้องการเพิ่ม (บาท)</label>
+                        <input type="number" id="addBalanceAmount" placeholder="1000" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-indigo-500 text-white placeholder-slate-600">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-300 mb-1">รหัสลับผู้พัฒนา</label>
+                        <input type="password" id="balanceSecret" placeholder="กรอกรหัสลับผู้พัฒนา" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-indigo-500 text-white placeholder-slate-600">
+                    </div>
+                    <button onclick="addCustomBalance()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-medium py-2.5 rounded-xl text-sm transition shadow-lg shadow-emerald-600/30">เติมเงินเข้าระบบ</button>
+                    <p id="balanceMsg" class="text-xs text-center"></p>
+                </div>
+
+                <!-- Add Product Form -->
+                <div class="space-y-4 bg-slate-950/60 p-5 rounded-2xl border border-slate-800/80">
+                    <h3 class="text-sm font-semibold text-indigo-400 uppercase tracking-wider">เพิ่มสินค้าใหม่ (แสดงให้ทุกคนเห็น)</h3>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-300 mb-1">ชื่อสินค้า / สคริปต์</label>
+                        <input type="text" id="addName" placeholder="เช่น Script Aimbot V2" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-indigo-500 text-white placeholder-slate-600">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-300 mb-1">ราคา (บาท - แนะนำ 500 ถึง 1000 ขึ้นไป)</label>
+                        <input type="number" id="addPrice" placeholder="699" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-indigo-500 text-white placeholder-slate-600">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-300 mb-1">ช่องใส่ข้อความ / สคริปต์ (ที่จะแสดงให้ผู้ซื้อคัดลอกหลังชำระเงิน)</label>
+                        <textarea id="addDesc" rows="3" placeholder="เช่น loadstring(game:HttpGet(...)) หรือข้อความสินค้าที่คุณต้องการ..." class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm font-mono text-indigo-300 focus:outline-none focus:border-indigo-500 placeholder-slate-600"></textarea>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-300 mb-1">รหัสลับผู้พัฒนา</label>
+                        <input type="password" id="addSecret" placeholder="กรอกรหัสลับผู้พัฒนา" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-indigo-500 text-white placeholder-slate-600">
+                    </div>
+                    <button onclick="addProduct()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-medium py-2.5 rounded-xl text-sm transition shadow-lg shadow-indigo-600/30">บันทึกเพิ่มสินค้า</button>
+                    <p id="addMsg" class="text-xs text-center"></p>
+                </div>
+
+                <!-- Delete Product Section -->
+                <div class="space-y-4 bg-slate-950/60 p-5 rounded-2xl border border-slate-800/80">
+                    <h3 class="text-sm font-semibold text-rose-400 uppercase tracking-wider">จัดการ / ลบสินค้าที่มีอยู่</h3>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-300 mb-1">เลือกสินค้าที่ต้องการลบ</label>
+                        <select id="deleteSelect" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-indigo-500 text-white">
+                            <!-- populated items -->
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-300 mb-1">รหัสลับผู้พัฒนา</label>
+                        <input type="password" id="deleteSecret" placeholder="กรอกรหัสลับผู้พัฒนาเพื่อยืนยันลบ" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-indigo-500 text-white placeholder-slate-600">
+                    </div>
+                    <button onclick="deleteProduct()" class="w-full bg-rose-600 hover:bg-rose-500 text-white font-medium py-2.5 rounded-xl text-sm transition shadow-lg shadow-rose-600/30">ลบสินค้าที่เลือก</button>
+                    <p id="deleteMsg" class="text-xs text-center"></p>
+                </div>
+
+                <!-- Hidden / Subtle Easter Egg Discount Codes at the very bottom -->
+                <div class="pt-4 border-t border-slate-800/80 text-center">
+                    <p class="text-[11px] text-slate-600 select-none tracking-widest uppercase mb-1">System Secret Log Archive // Confidential</p>
+                    <div class="flex flex-wrap justify-center gap-2 text-[10px] text-slate-700/60 font-mono">
+                        <span class="hover:text-slate-500 transition cursor-default">PISIT HUB</span>
+                        <span>•</span>
+                        <span class="hover:text-slate-500 transition cursor-default">Night Hub</span>
+                        <span>•</span>
+                        <span class="hover:text-slate-500 transition cursor-default">FREE hub</span>
+                        <span>•</span>
+                        <span class="hover:text-slate-500 transition cursor-default">Hjop hub</span>
+                        <span>•</span>
+                        <span class="hover:text-slate-500 transition cursor-default">Mko hub</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Custom Checkout Confirmation Modal -->
+    <div id="checkoutModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-md w-full p-6 sm:p-8 shadow-2xl space-y-6">
+            <div class="w-12 h-12 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400 mx-auto">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+            </div>
+            
+            <div class="text-center space-y-2">
+                <h3 class="text-lg font-bold text-white">ยืนยันการชำระเงิน</h3>
+                <div class="bg-amber-500/10 border border-amber-500/20 rounded-xl p-3 text-xs text-amber-300">
+                    ⚠️ แจ้งเตือน: เว็บไซต์นี้ไม่สามารถจ่ายเงินจริงได้นอกจากเงินในเว็บไซต์
+                </div>
+                <p id="modalItemTitle" class="text-sm font-medium text-slate-300 pt-2"></p>
+                <p class="text-xl font-bold text-emerald-400"><span id="modalItemPrice">0</span> บาท <span class="text-xs font-normal text-slate-400">(เงินในเว็บไซต์)</span></p>
+            </div>
+
+            <div class="flex space-x-3">
+                <button onclick="closeModal()" class="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-300 font-medium py-2.5 rounded-xl text-sm transition">ยกเลิก</button>
+                <button onclick="confirmPurchase()" class="flex-1 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-medium py-2.5 rounded-xl text-sm transition shadow-lg shadow-emerald-600/30">โปรดชำระเงิน (เงินในเว็บไซต์)</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Purchase Success & Delivery Modal with Copy Button -->
+    <div id="deliveryModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl space-y-6">
+            <div class="w-12 h-12 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 mx-auto text-xl">
+                ✓
+            </div>
+            
+            <div class="text-center space-y-2">
+                <h3 class="text-lg font-bold text-white">สั่งซื้อสินค้าสำเร็จ!</h3>
+                <p class="text-sm text-slate-300">นี่คือสคริปต์หรือข้อมูลสินค้าที่คุณสั่งซื้อ สามารถคัดลอกไปใช้งานได้ทันที</p>
+            </div>
+
+            <div class="space-y-2">
+                <label class="block text-xs font-medium text-slate-400">เนื้อหาสคริปต์ / ข้อมูลสินค้า:</label>
+                <div class="relative">
+                    <textarea id="deliveryContent" readonly rows="4" class="w-full bg-slate-950 border border-slate-800 rounded-2xl p-4 text-xs font-mono text-indigo-300 focus:outline-none resize-none"></textarea>
+                </div>
+            </div>
+
+            <div class="flex space-x-3">
+                <button onclick="closeDeliveryModal()" class="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-300 font-medium py-2.5 rounded-xl text-sm transition">ปิดหน้าต่าง</button>
+                <button onclick="copyDeliveryContent()" class="flex-1 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-medium py-2.5 rounded-xl text-sm transition shadow-lg shadow-indigo-600/30 flex items-center justify-center space-x-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path></svg>
+                    <span id="copyBtnText">คัดลอกใส่คลิปบอร์ด</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Generic Message / Alert Modal -->
+    <div id="alertModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-sm w-full p-6 shadow-2xl text-center space-y-4">
+            <div id="alertIcon" class="w-12 h-12 rounded-2xl mx-auto flex items-center justify-center text-xl"></div>
+            <h3 id="alertTitle" class="text-lg font-bold text-white">แจ้งเตือน</h3>
+            <p id="alertMessage" class="text-sm text-slate-300"></p>
+            <button onclick="closeAlert()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-medium py-2.5 rounded-xl text-sm transition">ตกลง</button>
+        </div>
+    </div>
+
+    <!-- Firebase SDK Setup & App Logic -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, deleteDoc, doc, onSnapshot, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
+
+        let app, db, auth;
+        try {
+            app = initializeApp(firebaseConfig);
+            db = getFirestore(app);
+            auth = getAuth(app);
+        } catch (e) {
+            console.error("Firebase init error:", e);
+        }
+
+        const SECRET_DEV_KEY = "bhuu";
+        const COUPON_REWARDS = {
+            "BlazeHub": 200,
+            "PISIT HUB": 50,
+            "Night Hub": 50,
+            "FREE hub": 50,
+            "Hjop hub": 50,
+            "Mko hub": 50
+        };
+
+        // State variables
+        let userBalance = 100;
+        let products = [];
+        let historyList = [];
+        let usedCoupons = [];
+        let selectedProductForPurchase = null;
+        let userId = null;
+
+        // Initialize Authentication and Firestore Listeners
+        async function initFirebase() {
+            if (!auth) {
+                loadLocalFallback();
+                return;
+            }
+            try {
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    await signInWithCustomToken(auth, __initial_auth_token);
+                } else {
+                    await signInAnonymously(auth);
+                }
+                userId = auth.currentUser?.uid || crypto.randomUUID();
+                
+                // Load local user balance/coupons
+                const savedBalance = localStorage.getItem('blazehub_balance');
+                if (savedBalance !== null) userBalance = parseFloat(savedBalance);
+                else {
+                    userBalance = 100;
+                    localStorage.setItem('blazehub_balance', userBalance);
+                }
+
+                const savedCoupons = localStorage.getItem('blazehub_used_coupons');
+                if (savedCoupons !== null) {
+                    try { usedCoupons = JSON.parse(savedCoupons); } catch(e) { usedCoupons = []; }
+                }
+
+                // Setup Realtime Listeners
+                setupRealtimeListeners();
+            } catch (err) {
+                console.error("Auth error:", err);
+                loadLocalFallback();
+            }
+        }
+
+        function loadLocalFallback() {
+            const savedBalance = localStorage.getItem('blazehub_balance');
+            if (savedBalance !== null) userBalance = parseFloat(savedBalance);
+            const savedProducts = localStorage.getItem('blazehub_products');
+            if (savedProducts !== null) {
+                try { products = JSON.parse(savedProducts); } catch(e) { products = []; }
+            }
+            const savedHistory = localStorage.getItem('blazehub_history');
+            if (savedHistory !== null) {
+                try { historyList = JSON.parse(savedHistory); } catch(e) { historyList = []; }
+            }
+            const savedCoupons = localStorage.getItem('blazehub_used_coupons');
+            if (savedCoupons !== null) {
+                try { usedCoupons = JSON.parse(savedCoupons); } catch(e) { usedCoupons = []; }
+            }
+            updateUI();
+        }
+
+        function setupRealtimeListeners() {
+            if (!db) return;
+
+            // Public Products Collection Listener
+            const productsCol = collection(db, 'artifacts', appId, 'public', 'data', 'products');
+            onSnapshot(productsCol, (snapshot) => {
+                products = [];
+                snapshot.forEach(docSnap => {
+                    products.push({ firestoreId: docSnap.id, ...docSnap.data() });
+                });
+                updateUI();
+            }, (error) => {
+                console.error("Products listener error:", error);
+            });
+
+            // Public History Collection Listener (shows purchases by all users)
+            const historyCol = collection(db, 'artifacts', appId, 'public', 'data', 'history');
+            onSnapshot(historyCol, (snapshot) => {
+                historyList = [];
+                snapshot.forEach(docSnap => {
+                    historyList.push(docSnap.data());
+                });
+                // Sort by timestamp if available
+                historyList.sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
+                updateUI();
+            }, (error) => {
+                console.error("History listener error:", error);
+            });
+        }
+
+        function saveLocalState() {
+            localStorage.setItem('blazehub_balance', userBalance);
+            localStorage.setItem('blazehub_used_coupons', JSON.stringify(usedCoupons));
+        }
+
+        // Update UI elements
+        window.updateUI = function() {
+            document.getElementById('userBalance').textContent = userBalance.toFixed(2);
+            
+            // Render Products Grid
+            const grid = document.getElementById('productsGrid');
+            grid.innerHTML = '';
+            
+            document.getElementById('itemCountBadge').textContent = `${products.length} รายการ`;
+
+            if (products.length === 0) {
+                grid.innerHTML = `<div class="col-span-full text-center py-16 text-slate-500 bg-slate-900/50 border border-slate-800/80 rounded-3xl">ยังไม่มีสคริปต์หรือสินค้าในระบบ (เฉพาะผู้พัฒนาสามารถเพิ่มสินค้าผ่านเมนู "ผู้พัฒนา")</div>`;
+            } else {
+                products.forEach(item => {
+                    const card = document.createElement('div');
+                    card.className = "bg-slate-900 border border-slate-800 rounded-3xl p-6 flex flex-col justify-between hover:border-slate-700 transition shadow-lg group";
+                    card.innerHTML = `
+                        <div>
+                            <div class="flex items-start justify-between mb-3">
+                                <span class="bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 text-xs px-3 py-1 rounded-full font-medium">Digital Script</span>
+                                <span class="text-emerald-400 font-bold text-lg">${item.price} <span class="text-xs font-normal text-slate-400">บาท</span></span>
+                            </div>
+                            <h3 class="text-lg font-bold text-white mb-2 group-hover:text-indigo-300 transition">${escapeHtml(item.name)}</h3>
+                            <p class="text-slate-400 text-sm mb-6">${escapeHtml(item.desc)}</p>
+                        </div>
+                        <button onclick="openCheckout('${item.firestoreId || item.id}')" class="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-medium py-2.5 rounded-xl text-sm transition shadow-lg shadow-indigo-600/20">ซื้อสคริปต์นี้</button>
+                    `;
+                    grid.appendChild(card);
+                });
+            }
+
+            // Render Delete Select Options
+            const deleteSelect = document.getElementById('deleteSelect');
+            deleteSelect.innerHTML = '';
+            if (products.length === 0) {
+                const opt = document.createElement('option');
+                opt.value = "";
+                opt.textContent = "ไม่มีสินค้าให้ลบ";
+                deleteSelect.appendChild(opt);
+            } else {
+                products.forEach(item => {
+                    const opt = document.createElement('option');
+                    opt.value = item.firestoreId || item.id;
+                    opt.textContent = `${item.name} (${item.price} บาท)`;
+                    deleteSelect.appendChild(opt);
+                });
+            }
+
+            // Render History Table
+            const tbody = document.getElementById('historyTableBody');
+            const emptyHistory = document.getElementById('emptyHistory');
+            tbody.innerHTML = '';
+
+            if (historyList.length === 0) {
+                emptyHistory.classList.remove('hidden');
+            } else {
+                emptyHistory.classList.add('hidden');
+                historyList.slice().reverse().forEach(h => {
+                    const row = document.createElement('tr');
+                    row.className = "border-b border-slate-800/40 hover:bg-slate-800/20 transition";
+                    row.innerHTML = `
+                        <td class="py-3 px-4 text-slate-400 text-xs">${h.date}</td>
+                        <td class="py-3 px-4 font-medium text-white">${escapeHtml(h.itemName)}</td>
+                        <td class="py-3 px-4 text-emerald-400 font-semibold">${h.price} บาท</td>
+                        <td class="py-3 px-4"><span class="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-xs px-2.5 py-0.5 rounded-full">สำเร็จ (เงินในเว็บไซต์)</span></td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            }
+        }
+
+        // Switch Tabs Function
+        window.switchTab = function(tabName) {
+            const tabs = ['store', 'history', 'admin'];
+            tabs.forEach(t => {
+                const el = document.getElementById(`tab${capitalize(t)}`);
+                const nav = document.getElementById(`nav${capitalize(t)}`);
+                const mobNav = document.getElementById(`mobileNav${capitalize(t)}`);
+                
+                if (t === tabName) {
+                    el.classList.remove('hidden');
+                    if (nav) {
+                        nav.className = "px-4 py-2 rounded-xl text-sm font-medium transition bg-indigo-600 text-white shadow-md shadow-indigo-600/30";
+                    }
+                    if (mobNav) {
+                        mobNav.className = "flex-1 py-1 text-center text-xs font-medium text-indigo-400 font-bold";
+                    }
+                } else {
+                    el.classList.add('hidden');
+                    if (nav) {
+                        nav.className = "px-4 py-2 rounded-xl text-sm font-medium transition text-slate-400 hover:text-white hover:bg-slate-800";
+                    }
+                    if (mobNav) {
+                        mobNav.className = "flex-1 py-1 text-center text-xs font-medium text-slate-400";
+                    }
+                }
+            });
+        }
+
+        // Apply Discount Code
+        window.applyCoupon = function() {
+            const input = document.getElementById('couponInput');
+            const msg = document.getElementById('couponMsg');
+            const code = input.value.trim();
+
+            if (!code) {
+                msg.textContent = "✕ กรุณากรอกโค้ดส่วนลด";
+                msg.className = "text-xs mt-2 text-rose-400";
+                return;
+            }
+
+            if (usedCoupons.includes(code)) {
+                showAlert("แจ้งเตือน", "คุณเคยใช้โค้ดส่วนลดนี้ไปแล้ว", "amber");
+                msg.textContent = "✕ โค้ดส่วนลดนี้ถูกใช้งานไปแล้ว";
+                msg.className = "text-xs mt-2 text-amber-400";
+                return;
+            }
+
+            const rewardAmount = COUPON_REWARDS[code];
+
+            if (rewardAmount !== undefined) {
+                usedCoupons.push(code);
+                userBalance += rewardAmount;
+                saveLocalState();
+                updateUI();
+                
+                input.value = '';
+                msg.textContent = `✓ ใช้โค้ดส่วนลด "${code}" สำเร็จ! รับเพิ่ม ${rewardAmount} บาท (เงินในเว็บไซต์)`;
+                msg.className = "text-xs mt-2 text-emerald-400";
+                showAlert("สำเร็จ", `ใช้โค้ดส่วนลด "${code}" สำเร็จ! คุณได้รับเงินในเว็บไซต์เพิ่ม ${rewardAmount} บาท`, "emerald");
+            } else {
+                msg.textContent = "✕ โค้ดส่วนลดไม่ถูกต้องหรือหมดอายุ";
+                msg.className = "text-xs mt-2 text-rose-400";
+            }
+        }
+
+        // Open Checkout Confirmation Modal
+        window.openCheckout = function(productId) {
+            const product = products.find(p => (p.firestoreId || p.id) == productId);
+            if (!product) return;
+
+            selectedProductForPurchase = product;
+            document.getElementById('modalItemTitle').textContent = product.name;
+            document.getElementById('modalItemPrice').textContent = product.price;
+            document.getElementById('checkoutModal').classList.remove('hidden');
+        }
+
+        // Close Checkout Modal
+        window.closeModal = function() {
+            document.getElementById('checkoutModal').classList.add('hidden');
+            selectedProductForPurchase = null;
+        }
+
+        // Confirm Purchase Handler
+        window.confirmPurchase = async function() {
+            if (!selectedProductForPurchase) return;
+
+            if (userBalance < selectedProductForPurchase.price) {
+                closeModal();
+                showAlert("ยอดเงินไม่พอ", "เงินในเว็บไซต์ของคุณไม่เพียงพอสำหรับการซื้อสินค้านี้", "rose");
+                return;
+            }
+
+            userBalance -= selectedProductForPurchase.price;
+            const now = new Date();
+            const dateStr = now.toLocaleDateString('th-TH', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+
+            const purchasedItemName = selectedProductForPurchase.name;
+            const itemContent = selectedProductForPurchase.desc;
+
+            const historyItem = {
+                date: dateStr,
+                itemName: purchasedItemName,
+                price: selectedProductForPurchase.price,
+                timestamp: Date.now()
+            };
+
+            // Save history to Firestore if available, otherwise local
+            if (db) {
+                try {
+                    await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'history'), historyItem);
+                } catch (e) {
+                    console.error("Error saving history to Firestore:", e);
+                    historyList.push(historyItem);
+                    localStorage.setItem('blazehub_history', JSON.stringify(historyList));
+                }
+            } else {
+                historyList.push(historyItem);
+                localStorage.setItem('blazehub_history', JSON.stringify(historyList));
+            }
+
+            saveLocalState();
+            updateUI();
+            closeModal();
+
+            document.getElementById('deliveryContent').value = itemContent;
+            document.getElementById('copyBtnText').textContent = "คัดลอกใส่คลิปบอร์ด";
+            document.getElementById('deliveryModal').classList.remove('hidden');
+        }
+
+        // Close Delivery Modal
+        window.closeDeliveryModal = function() {
+            document.getElementById('deliveryModal').classList.add('hidden');
+        }
+
+        // Copy Delivery Content to Clipboard
+        window.copyDeliveryContent = function() {
+            const textarea = document.getElementById('deliveryContent');
+            textarea.select();
+            textarea.setSelectionRange(0, 99999);
+
+            try {
+                const successful = document.execCommand('copy');
+                if (successful) {
+                    const btnText = document.getElementById('copyBtnText');
+                    btnText.textContent = "คัดลอกสำเร็จ! ✓";
+                    setTimeout(() => {
+                        btnText.textContent = "คัดลอกใส่คลิปบอร์ด";
+                    }, 2000);
+                } else {
+                    showAlert("แจ้งเตือน", "ไม่สามารถคัดลอกอัตโนมัติได้ กรุณาคัดลอกด้วยตนเอง", "amber");
+                }
+            } catch (err) {
+                showAlert("แจ้งเตือน", "เกิดข้อผิดพลาดในการคัดลอก", "rose");
+            }
+        }
+
+        // Admin: Add Product (requires secret key bhuu)
+        window.addProduct = async function() {
+            const name = document.getElementById('addName').value.trim();
+            const priceVal = document.getElementById('addPrice').value.trim();
+            const desc = document.getElementById('addDesc').value.trim();
+            const secret = document.getElementById('addSecret').value.trim();
+            const msg = document.getElementById('addMsg');
+
+            if (secret !== SECRET_DEV_KEY) {
+                msg.textContent = "✕ รหัสลับผู้พัฒนาไม่ถูกต้อง!";
+                msg.className = "text-xs text-rose-400";
+                return;
+            }
+
+            if (!name || !priceVal || !desc) {
+                msg.textContent = "✕ กรุณากรอกข้อมูลสินค้าให้ครบถ้วน";
+                msg.className = "text-xs text-rose-400";
+                return;
+            }
+
+            const price = parseFloat(priceVal);
+            if (isNaN(price) || price <= 0) {
+                msg.textContent = "✕ กรุณากระบุราคาให้ถูกต้อง";
+                msg.className = "text-xs text-rose-400";
+                return;
+            }
+
+            const newProduct = { name, price, desc, createdAt: Date.now() };
+
+            if (db) {
+                try {
+                    await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'products'), newProduct);
+                } catch (e) {
+                    console.error("Error adding product to Firestore:", e);
+                    const newId = products.length > 0 ? Math.max(...products.map(p => p.id || 0)) + 1 : 1;
+                    products.push({ id: newId, ...newProduct });
+                    localStorage.setItem('blazehub_products', JSON.stringify(products));
+                }
+            } else {
+                const newId = products.length > 0 ? Math.max(...products.map(p => p.id || 0)) + 1 : 1;
+                products.push({ id: newId, ...newProduct });
+                localStorage.setItem('blazehub_products', JSON.stringify(products));
+            }
+
+            updateUI();
+
+            document.getElementById('addName').value = '';
+            document.getElementById('addPrice').value = '';
+            document.getElementById('addDesc').value = '';
+            document.getElementById('addSecret').value = '';
+            msg.textContent = "✓ เพิ่มสินค้าสำเร็จแล้ว (แสดงให้ทุกคนเห็นทันที)!";
+            msg.className = "text-xs text-emerald-400";
+        }
+
+        // Admin: Add Custom Balance (requires secret key bhuu)
+        window.addCustomBalance = function() {
+            const amountVal = document.getElementById('addBalanceAmount').value.trim();
+            const secret = document.getElementById('balanceSecret').value.trim();
+            const msg = document.getElementById('balanceMsg');
+
+            if (secret !== SECRET_DEV_KEY) {
+                msg.textContent = "✕ รหัสลับผู้พัฒนาไม่ถูกต้อง!";
+                msg.className = "text-xs text-rose-400";
+                return;
+            }
+
+            if (!amountVal) {
+                msg.textContent = "✕ กรุณากรอกจำนวนเงินที่ต้องการเพิ่ม";
+                msg.className = "text-xs text-rose-400";
+                return;
+            }
+
+            const amount = parseFloat(amountVal);
+            if (isNaN(amount) || amount <= 0) {
+                msg.textContent = "✕ กรุณาระบุจำนวนเงินให้ถูกต้อง";
+                msg.className = "text-xs text-rose-400";
+                return;
+            }
+
+            userBalance += amount;
+            saveLocalState();
+            updateUI();
+
+            document.getElementById('addBalanceAmount').value = '';
+            document.getElementById('balanceSecret').value = '';
+            msg.textContent = `✓ เติมเงินสำเร็จ +${amount.toLocaleString()} บาท (เงินในเว็บไซต์)`;
+            msg.className = "text-xs text-emerald-400";
+            showAlert("เติมเงินสำเร็จ", `คุณได้เพิ่มเงินในเว็บไซต์จำนวน ${amount.toLocaleString()} บาทเรียบร้อยแล้ว`, "emerald");
+        }
+
+        // Admin: Delete Product (requires secret key bhuu)
+        window.deleteProduct = async function() {
+            const selectId = document.getElementById('deleteSelect').value;
+            const secret = document.getElementById('deleteSecret').value.trim();
+            const msg = document.getElementById('deleteMsg');
+
+            if (secret !== SECRET_DEV_KEY) {
+                msg.textContent = "✕ รหัสลับผู้พัฒนาไม่ถูกต้อง!";
+                msg.className = "text-xs text-rose-400";
+                return;
+            }
+
+            if (!selectId) {
+                msg.textContent = "✕ กรุณาเลือกสินค้าที่ต้องการลบ";
+                msg.className = "text-xs text-rose-400";
+                return;
+            }
+
+            const productToDelete = products.find(p => (p.firestoreId || p.id) == selectId);
+
+            if (db && productToDelete && productToDelete.firestoreId) {
+                try {
+                    await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'products', productToDelete.firestoreId));
+                } catch (e) {
+                    console.error("Error deleting from Firestore:", e);
+                }
+            } else {
+                products = products.filter(p => p.id != selectId);
+                localStorage.setItem('blazehub_products', JSON.stringify(products));
+            }
+
+            updateUI();
+
+            document.getElementById('deleteSecret').value = '';
+            msg.textContent = "✓ ลบสินค้าสำเร็จแล้ว!";
+            msg.className = "text-xs text-emerald-400";
+        }
+
+        // Helper: Generic Alert Modal
+        window.showAlert = function(title, message, type = 'indigo') {
+            document.getElementById('alertTitle').textContent = title;
+            document.getElementById('alertMessage').textContent = message;
+            
+            const iconEl = document.getElementById('alertIcon');
+            if (type === 'emerald') {
+                iconEl.className = "w-12 h-12 rounded-2xl mx-auto flex items-center justify-center text-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20";
+                iconEl.innerHTML = "✓";
+            } else if (type === 'rose') {
+                iconEl.className = "w-12 h-12 rounded-2xl mx-auto flex items-center justify-center text-xl bg-rose-500/10 text-rose-400 border border-rose-500/20";
+                iconEl.innerHTML = "✕";
+            } else {
+                iconEl.className = "w-12 h-12 rounded-2xl mx-auto flex items-center justify-center text-xl bg-amber-500/10 text-amber-400 border border-amber-500/20";
+                iconEl.innerHTML = "i";
+            }
+
+            document.getElementById('alertModal').classList.remove('hidden');
+        }
+
+        window.closeAlert = function() {
+            document.getElementById('alertModal').classList.add('hidden');
+        }
+
+        function capitalize(str) {
+            return str.charAt(0).toUpperCase() + str.slice(1);
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            const map = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;'
+            };
+            return text.replace(/[&<>"']/g, function(m) { return map[m]; });
+        }
+
+        // Initialize on window load
+        window.onload = function() {
+            initFirebase();
+        };
+    </script>
+</body>
+</html>
